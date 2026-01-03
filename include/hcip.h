@@ -24,10 +24,83 @@ typedef enum {
  * HCI Event packet types.
  */
 typedef enum {
-    EVT_CMD_COMPLETE = 0x0e,
-    EVT_CMD_STATUS   = 0x0f,
+    EVT_INQUIRY_COMPLETE                  = 0x01,
+    EVT_INQUIRY_RESULT                    = 0x02,
+    EVT_CONN_COMPLETE                     = 0x03,
+    EVT_CONN_REQUEST                      = 0x04,
+    EVT_DISCONN_COMPLETE                  = 0x05,
+    EVT_AUTH_COMPLETE                     = 0x06,
+    EVT_REMOTE_NAME_REQ_COMPLETE          = 0x07,
+    EVT_ENCRYPT_CHANGE                    = 0x08,
+    EVT_CHANGE_CONN_LINK_KEY_COMPLETE     = 0x09,
+    EVT_MASTER_LINK_KEY_COMPLETE          = 0x0A,
+    EVT_READ_REMOTE_FEATURES_COMPLETE     = 0x0B,
+    EVT_READ_REMOTE_VERSION_COMPLETE      = 0x0C,
+    EVT_QOS_SETUP_COMPLETE                = 0x0D,
+    EVT_CMD_STATUS                        = 0x0F,
+    EVT_CMD_COMPLETE                      = 0x0E,
+    EVT_HARDWARE_ERROR                    = 0x10,
+    EVT_FLUSH_OCCURRED                    = 0x11,
+    EVT_ROLE_CHANGE                       = 0x12,
+    EVT_NUM_COMP_PKTS                     = 0x13,
+    EVT_MODE_CHANGE                       = 0x14,
+    EVT_RETURN_LINK_KEYS                  = 0x15,
+    EVT_PIN_CODE_REQ                      = 0x16,
+    EVT_LINK_KEY_REQ                      = 0x17,
+    EVT_LINK_KEY_NOTIFY                   = 0x18,
+    EVT_LOOPBACK_COMMAND                  = 0x19,
+    EVT_DATA_BUFFER_OVERFLOW              = 0x1A,
+    EVT_MAX_SLOTS_CHANGE                  = 0x1B,
+    EVT_READ_CLOCK_OFFSET_COMPLETE        = 0x1C,
+    EVT_CONN_PTYPE_CHANGED                = 0x1D,
+    EVT_QOS_VIOLATION                     = 0x1E,
+    EVT_PSCAN_REP_MODE_CHANGE             = 0x20,
+    EVT_FLOW_SPEC_COMPLETE                = 0x21,
+    EVT_INQUIRY_RESULT_WITH_RSSI          = 0x22,
+    EVT_READ_REMOTE_EXT_FEATURES_COMPLETE = 0x23,
+    EVT_SYNC_CONN_COMPLETE                = 0x2C,
+    EVT_SYNC_CONN_CHANGED                 = 0x2D,
+    EVT_SNIFF_SUBRATING                   = 0x2E,
+    EVT_EXTENDED_INQUIRY_RESULT           = 0x2F,
+    EVT_ENCRYPTION_KEY_REFRESH_COMPLETE   = 0x30,
+    EVT_IO_CAPABILITY_RESPONSE            = 0x32,
+    EVT_USER_CONFIRM_REQUEST              = 0x33,
+    EVT_USER_PASSKEY_REQUEST              = 0x34,
+    EVT_REMOTE_OOB_DATA_REQUEST           = 0x35,
+    EVT_SIMPLE_PAIRING_COMPLETE           = 0x36,
+    EVT_LINK_SUPERVISION_TIMEOUT_CHANGED  = 0x38,
+    EVT_ENHANCED_FLUSH_COMPLETE           = 0x39,
+    EVT_USER_PASSKEY_NOTIFY               = 0x3B,
+    EVT_KEYPRESS_NOTIFY                   = 0x3C,
+    EVT_REMOTE_HOST_FEATURES_NOTIFY       = 0x3D,
+    EVT_LE_META_EVENT                     = 0x3E,
+
+    EVT_CHANNEL_SELECTED                  = 0x41,
+    EVT_PHYSICAL_LINK_COMPLETE            = 0x40,
+    EVT_DISCONNECT_PHYSICAL_LINK_COMPLETE = 0x42,
+    EVT_PHYSICAL_LINK_LOSS_EARLY_WARNING  = 0x43,
+    EVT_PHYSICAL_LINK_RECOVERY            = 0x44,
+    EVT_LOGICAL_LINK_COMPLETE             = 0x45,
+    EVT_DISCONNECT_LOGICAL_LINK_COMPLETE  = 0x46,
+    EVT_FLOW_SPEC_MODIFY_COMPLETE         = 0x47,
+    EVT_NUMBER_COMPLETED_BLOCKS           = 0x48,
+
+    EVT_AMP_STATUS_CHANGE                 = 0x4D,
+    EVT_TESTING                           = 0xFE,
+    EVT_VENDOR                            = 0xFF,
 }hci_event_type;
 
+/*
+ * BLE meta event types.
+ * These are one layer below `EVT_LE_META_EVENT` (0x3E)
+ */
+typedef enum {
+    EVT_LE_CONN_COMPLETE                      = 0x00,
+    EVT_LE_ADVERTISING_REPORT                 = 0x02,
+    EVT_LE_CONN_UPDATE_COMPLETE               = 0x03,
+    EVT_LE_READ_REMOTE_USED_FEATURES_COMPLETE = 0x04,
+    EVT_LE_LTK_REQUEST                        = 0x05,
+}hci_le_meta_event_type;
 
 /*
  * Universal HCI error codes.

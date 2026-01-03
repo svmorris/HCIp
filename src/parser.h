@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <../include/hcip.h>
 
-#define PARSER_HCI_MAX_DEPTH 10
+#define PARSER_HCI_MAX_DEPTH 0xa
 
 typedef struct {
     const uint8_t *buf;
@@ -16,7 +16,7 @@ typedef struct {
                                          // will be made based on uint32_t values,
                                          // but if so, then this has to be updated.
 
-    hci_pkt returns;
+    hci_pkt *returns;
 }hci_parser_ctx;
 
 

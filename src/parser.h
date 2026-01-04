@@ -20,5 +20,9 @@ typedef struct {
 }hci_parser_ctx;
 
 
+// EVT dispatch table entries
+typedef int (*evt_handler_t)(hci_parser_ctx *ctx);
+
+
 
 #endif

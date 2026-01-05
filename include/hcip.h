@@ -66,7 +66,7 @@ typedef enum {
     EVT_ENCRYPTION_KEY_REFRESH_COMPLETE   = 0x30,
     EVT_IO_CAPABILITY_RESPONSE            = 0x32,
     EVT_USER_CONFIRM_REQUEST              = 0x33,
-    EVT_USER_PASSKEY_REQUEST              = 0x34,
+    EVT_USER_PASSKEY_REQUEST              = complete0x34,
     EVT_REMOTE_OOB_DATA_REQUEST           = 0x35,
     EVT_SIMPLE_PAIRING_COMPLETE           = 0x36,
     EVT_LINK_SUPERVISION_TIMEOUT_CHANGED  = 0x38,
@@ -163,6 +163,20 @@ typedef enum {
 }hci_error_codes;
 
 
+// =========================== Already Implemented Functions ===========================
+
+/*
+ * The `kind` enum creates a global identifier for each possible
+ * packet type.
+ * .. finish
+ */
+typedef enum {
+    HKIND_UNKNOWN = 0,
+    HKIND_EVT_COMMAND_STATUS,
+    HKIND_EVT_COMMAND_COMPLETE,
+}global_pkt_kind;
+
+
 // =========================== Parser Return Definitions ===========================
 /*
  * Command status event.
@@ -210,8 +224,10 @@ typedef struct {
  * This is the base return type of the parser. All
  * HCI packets should be fitted within this struct.
  */
-typedef struct {
+typedef struct hci_pkt {
     hci_pkt_type type;
+    global_pkt_kind kind;
+
     union {
         hci_event_pkt event_pkt;
     } u;
@@ -224,16 +240,29 @@ typedef struct {
 // =========================== Exposed Functions ===========================
 
 
+/*
+ * Error codes produced by the parser.
+ *
+ * If the parser returns a non-zero error code
+ * look for these definitions and NOT the 
+ * HCI error codes defined above.
+ *
+ * HCI error codes are reserved for errors
+ * produced by the bluetooth controller.
+ */
 typedef enum {
-    PARSE_OK = 0,      // Correctly parsed pkt.
-    PARSE_UNSUPPORTED, // Correct, but unsupported features.
-    PARSE_TRUNCATED,   // In complete buffer.
-    PARSE_INVALID,     // Invalid HCI packets.
-    PARSE_EINVAL,      // User error.
-    PARSE_ERROR,       // Internal parser error.
+    PARSE_OK          = 0, // Correctly parsed pkt.
+    PARSE_UNSUPPORTED = 1, // Correct, but unsupported features.
+    PARSE_TRUNCATED   = 2, // In complete buffer.
+    PARSE_INVALID     = 3, // Invalid HCI packets.
+    PARSE_EINVAL      = 4, // User error.
+    PARSE_ERROR       = 5, // Internal parser error.
 }parse_error_codes;
 
 
 int parse_hci(uint8_t *buffer, size_t buf_len, hci_pkt pkt);
 
 #endif
+
+
+

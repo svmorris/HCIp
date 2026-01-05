@@ -4,12 +4,13 @@ CC := cc
 # Directories
 SRC_DIR   := src
 INC_DIR   := include
+UTIL_DIR  := util
 TEST_DIR  := tests
 BUILD_DIR := build
 OBJ_DIR   := $(BUILD_DIR)/obj
 BIN_DIR   := $(BUILD_DIR)/bin
 
-# Library sources
+# Core library sources
 LIB_SRCS := \
 	$(SRC_DIR)/parser.c \
 	$(SRC_DIR)/events.c
@@ -18,12 +19,16 @@ LIB_OBJS := \
 	$(OBJ_DIR)/parser.o \
 	$(OBJ_DIR)/events.o
 
+# Util (tests only)
+UTIL_SRCS := $(wildcard $(UTIL_DIR)/*.c)
+UTIL_OBJS := $(patsubst $(UTIL_DIR)/%.c,$(OBJ_DIR)/util_%.o,$(UTIL_SRCS))
+
 # Tests
 TEST_SRCS := $(wildcard $(TEST_DIR)/*.c)
 TEST_BINS := $(patsubst $(TEST_DIR)/%.c,$(BIN_DIR)/%,$(TEST_SRCS))
 
 # Include paths
-CPPFLAGS := -I$(INC_DIR) -I$(SRC_DIR)
+CPPFLAGS := -I$(INC_DIR) -I$(SRC_DIR) -I$(UTIL_DIR)
 
 # Warnings
 WARN_FLAGS := -Wall -Wextra -Wpedantic
@@ -66,7 +71,7 @@ debug: dirs $(TEST_BINS)
 dirs:
 	@mkdir -p $(OBJ_DIR) $(BIN_DIR)
 
-# Object rules
+# Core objects
 $(OBJ_DIR)/parser.o: $(SRC_DIR)/parser.c \
                      $(SRC_DIR)/parser.h \
                      $(SRC_DIR)/events.h \
@@ -79,9 +84,13 @@ $(OBJ_DIR)/events.o: $(SRC_DIR)/events.c \
                      $(INC_DIR)/hcip.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-# Test binaries
-$(BIN_DIR)/%: $(TEST_DIR)/%.c $(LIB_OBJS) $(INC_DIR)/hcip.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(LIB_OBJS) $(LDFLAGS) -o $@
+# Util objects (tests only)
+$(OBJ_DIR)/util_%.o: $(UTIL_DIR)/%.c $(UTIL_DIR)/%.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+# Test binaries (link core + util)
+$(BIN_DIR)/%: $(TEST_DIR)/%.c $(LIB_OBJS) $(UTIL_OBJS) $(INC_DIR)/hcip.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(LIB_OBJS) $(UTIL_OBJS) $(LDFLAGS) -o $@
 
 # Clean
 .PHONY: clean

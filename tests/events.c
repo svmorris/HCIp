@@ -6,7 +6,7 @@
 int status_evt();
 
 
-int main(int argc, char **argv)
+int main()
 {
     status_evt();
     return 0;

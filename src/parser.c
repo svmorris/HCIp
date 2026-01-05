@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdint.h>
+
 #include "parser.h"
 #include "events.h"
 
@@ -69,19 +71,16 @@ static int dispatch_pkt_type(hci_parser_ctx *ctx)
  * table. Event if only a couple of them are implemented
  * right now.
  */
-
 static int handler_pkt_event(hci_parser_ctx *ctx)
 {
-
     evt_handler_t evt_dispatch_table[256] = {
-        /* default for all unspecified opcodes */
         [0 ... 255] = handler_evt_unknown,
 
-        /* command-related */
+        // Implemented events go here.
         [EVT_CMD_STATUS]   = handler_evt_status,
-        [EVT_CMD_COMPLETE] = handler_evt_command,
+        [EVT_CMD_COMPLETE] = handler_evt_command_complete,
 
-        /* explicitly handled-but-not-yet-implemented events */
+        // Events that still need to be implemented.
         [EVT_INQUIRY_COMPLETE]                  = handler_evt_unimplemented,
         [EVT_INQUIRY_RESULT]                    = handler_evt_unimplemented,
         [EVT_CONN_COMPLETE]                     = handler_evt_unimplemented,
@@ -148,12 +147,12 @@ static int handler_pkt_event(hci_parser_ctx *ctx)
         [EVT_VENDOR]                            = handler_evt_unimplemented,
     };
 
-    uint8_t evt_byte = ctx->buf[offset];
+    uint8_t evt_byte = ctx->buf[ctx->offset];
     ctx->path[ctx->depth] = evt_byte;
     ctx->offset++;
     ctx->depth++;
 
-    return evt_dispatch_table[evt_code](ctx);
+    return evt_dispatch_table[evt_byte](ctx);
 }
 
 static int handler_pkt_command(hci_parser_ctx *ctx)

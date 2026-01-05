@@ -2,6 +2,7 @@
 
 
 #ifndef HCI_PARSE_HEADER
+#define HCI_PARSE_HEADER
 
 #include <stdint.h>
 #include <unistd.h>

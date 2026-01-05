@@ -9,10 +9,16 @@ BUILD_DIR := build
 OBJ_DIR   := $(BUILD_DIR)/obj
 BIN_DIR   := $(BUILD_DIR)/bin
 
-# Sources
-LIB_SRC := $(SRC_DIR)/parser.c
-LIB_OBJ := $(OBJ_DIR)/parser.o
+# Library sources
+LIB_SRCS := \
+	$(SRC_DIR)/parser.c \
+	$(SRC_DIR)/events.c
 
+LIB_OBJS := \
+	$(OBJ_DIR)/parser.o \
+	$(OBJ_DIR)/events.o
+
+# Tests
 TEST_SRCS := $(wildcard $(TEST_DIR)/*.c)
 TEST_BINS := $(patsubst $(TEST_DIR)/%.c,$(BIN_DIR)/%,$(TEST_SRCS))
 
@@ -60,12 +66,24 @@ debug: dirs $(TEST_BINS)
 dirs:
 	@mkdir -p $(OBJ_DIR) $(BIN_DIR)
 
-# Parser object (depends on BOTH headers)
-$(LIB_OBJ): $(LIB_SRC) $(SRC_DIR)/parser.h $(INC_DIR)/hcip.h
+# Object rules
+$(OBJ_DIR)/parser.o: $(SRC_DIR)/parser.c \
+                     $(SRC_DIR)/parser.h \
+                     $(SRC_DIR)/events.h \
+                     $(INC_DIR)/hcip.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-# Test binaries (tests include only hcip.h)
-$(BIN_DIR)/%: $(TEST_DIR)/%.c $(LIB_OBJ) $(INC_DIR)/hcip.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(LIB_OBJ) $(LDFLAGS) -o $@
+$(OBJ_DIR)/events.o: $(SRC_DIR)/events.c \
+                     $(SRC_DIR)/events.h \
+                     $(SRC_DIR)/parser.h \
+                     $(INC_DIR)/hcip.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-# Cle
+# Test binaries
+$(BIN_DIR)/%: $(TEST_DIR)/%.c $(LIB_OBJS) $(INC_DIR)/hcip.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(LIB_OBJS) $(LDFLAGS) -o $@
+
+# Clean
+.PHONY: clean
+clean:
+	rm -rf $(BUILD_DIR)

@@ -1,4 +1,5 @@
 #ifndef INTERNAL_PARSER_HEADER
+#define INTERNAL_PARSER_HEADER
 
 #include <unistd.h>
 #include <stdint.h>

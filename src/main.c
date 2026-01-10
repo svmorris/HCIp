@@ -7,6 +7,7 @@
 
 int parse_event(uint8_t *example, struct evt_cmd_status *evt);
 int encode_event(uint8_t *buffer, struct evt_cmd_status *evt);
+int parse_event_complete(uint8_t *example, struct evt_cmd_complete *evt);
 
 int main()
 {
@@ -23,14 +24,108 @@ int main()
     uint8_t *buffer = malloc(256);
     memset(buffer, 0, 256);
     encode_event(buffer, &evt);
+
+
+
+    putchar('\n');
+    putchar('\n');
+
+    uint8_t example1[] = { 0x04, 0x0e, 0x0c, 0x01, 0x01, 0x10, 0x00, 0x0d, 0x85, 0x30, 0x0d, 0x02, 0x00, 0x85, 0x30 };
+    struct evt_cmd_complete evtc = {0};
+
+    parse_event_complete(example1, &evtc);
+
+    putchar('\n');
+    putchar('\n');
+
 }
 
 
+int parse_event_complete(uint8_t *example, struct evt_cmd_complete *evt)
+{
+    printf("Parsing example complete packet: ");
+    for (size_t i = 0; i < 15; i++)
+    {
+        printf("%02x ", example[i]);
+    }
+    putchar('\n');
+
+
+    if (example[1] != 0x0e)
+        return 1; //unimplemented
+
+    // get a pointer to the number of parameters
+    uint8_t *params = &example[2];
+
+    // we are counting offset from the parameters not from the start of the packet
+    size_t offset = 0;
+    /* puts("a"); */
+
+
+    // using the spec defined length not the one in the bytes
+    // Loop over each byte
+    for (size_t i = 0; i < evt_cmd_complete_desc_len; i++)
+    {
+
+        // Using f to get the field description row for each one
+        const struct field_desc *f = &evt_cmd_complete_desc[i];
+
+        // Getting a pointer to the same offset but in the evt struct
+        uint8_t *dst = (uint8_t *)evt + f->offset;
+
+        // switch on the field type (as defined in the description table)
+        switch (f->type)
+        {
+            // uint8_t bytes are simple
+            case F_U8:
+                *dst = params[offset];
+                offset += 1;
+                break;
+
+            // For uint16 bytes we need to switch on whether they are little or big endien
+            // for now its only handling the LE types
+            case F_U16:
+                if (f->endian == ENDIAN_LE)
+                {
+                    uint16_t v = (uint16_t)params[offset] | ((uint16_t)params[offset+1] << 8);
+                    memcpy(dst, &v, sizeof(uint16_t));
+                }
+                else{}
+                offset += 2;
+                break;
+
+            // Don't yet have a description for bytes
+            // will most likely just be a pointer to the original buffer
+            // with a length field.
+            case F_BYTES:
+                uint8_t *p = params + offset;
+                *(uint8_t **)dst = p;
+                offset += (evt->num_bytes - offset);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    printf("EVT_CMD_COMPLETE parsed:\n");
+    printf("  num_bytes        = %02x\n", evt->num_bytes);
+    printf("  num_hci_commands = %02x\n", evt->num_hci_commands);
+    printf("  opcode           = 0x%04x\n", evt->opcode);
+    printf("  status           = 0x%02x\n", evt->status);
+    printf("  Packet bytes: ");
+    uint8_t *p1 = *(uint8_t **)evt->rparams;
+    for (size_t i = 0; i < evt->num_bytes; i++)
+        printf("%02x ", p1[i]);
+    putchar('\n');
+
+    return 0;
+}
 
 
 int parse_event(uint8_t *example, struct evt_cmd_status *evt)
 {
-    printf("Parsing example packet: ");
+    printf("Parsing example status packet: ");
     for (size_t i = 0; i < 7; i++)
     {
         printf("%02x ", example[i]);

@@ -8,6 +8,7 @@
 int parse_event(uint8_t *example, struct evt_cmd_status *evt);
 int encode_event(uint8_t *buffer, struct evt_cmd_status *evt);
 int parse_event_complete(uint8_t *example, struct evt_cmd_complete *evt);
+int encode_event_complete(uint8_t *buffer, struct evt_cmd_complete *evt);
 
 int main()
 {
@@ -21,10 +22,17 @@ int main()
     putchar('\n');
     putchar('\n');
 
+    /*
+     * Note: We just assume that the client will be able to
+     * provide a buffer large enough for the returned data.
+     *
+     * This is obviously not a great solution since the client
+     * has no idea how long it will be. A problem for future me
+     * to fix.
+     */
     uint8_t *buffer = malloc(256);
     memset(buffer, 0, 256);
     encode_event(buffer, &evt);
-
 
 
     putchar('\n');
@@ -38,6 +46,9 @@ int main()
     putchar('\n');
     putchar('\n');
 
+
+    memset(buffer, 0, 256);
+    encode_event_complete(buffer, &evtc);
 }
 
 
@@ -251,3 +262,77 @@ int encode_event(uint8_t *buffer, struct evt_cmd_status *evt)
     return 0;
 }
 
+int encode_event_complete(uint8_t *buffer, struct evt_cmd_complete *evt)
+{
+    printf("EVT_CMD_COMPLETE to be encoded:\n");
+    printf("  num_bytes        = %u\n", evt->num_bytes);
+    printf("  status           = 0x%02x\n", evt->status);
+    printf("  num_hci_commands = %u\n", evt->num_hci_commands);
+    printf("  opcode           = 0x%04x\n", evt->opcode);
+
+    buffer[0] = 0x04;
+    buffer[1] = 0x0e;
+
+    int offset = 2;
+
+    for (size_t i = 0; i < evt_cmd_complete_desc_len; i++)
+    {
+        const struct field_desc *f = &evt_cmd_complete_desc[i];
+
+        // the destination is now the buffer
+        uint8_t *dst = buffer + offset;
+
+
+        switch (f->type)
+        {
+            case F_U8:
+                *dst = ((uint8_t *)evt)[f->offset];
+                offset += 1;
+                break;
+
+            case F_U16:
+                if (f->endian == ENDIAN_LE)
+                {
+                    uint16_t v = ((uint8_t *)evt)[f->offset] | (((uint8_t *)evt)[f->offset+1] << 8);
+                    memcpy(dst, &v, sizeof(uint16_t));
+                }
+                else{}
+                offset += 2;
+                break;
+            case F_BYTES:
+                // not implemented
+                printf("Size registered in strcut: %02x\n", (unsigned int)f->size);
+                // + 3 might seem like quite an arbitrary number here. It isn't, but getting
+                // to it is not clear.
+                // offset+3 signifies the bytes consumed after num_bytes, this is because
+                // the loop started with the offset of 2 and num_bytes was the first value.
+                printf("Size calculated from num_bytes: %x\n", evt->num_bytes-offset+3);
+
+                // It might also not seem like the cleanest solution to rely on adding
+                // or removing values from num bytes as the best way to store the length
+                // of this buffer. You are right, but I'm not yet sure if its actually bad.
+                //
+                // I'm not sure if it would be worse if instead I would have to make
+                // custom fields within the struct for buffer lengths. As long as each
+                // packet only has one type of array and each packet always starts with
+                // num_bytes, it *should* work.
+                //
+                // Also this is just the initial implementation that will 100% be re-written.
+                memcpy(dst, *(uint8_t **)evt->rparams, (evt->num_bytes-offset+3));
+                offset = offset + (evt->num_bytes-offset+3);
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    printf("Encoded packet:");
+    for (size_t i = 0; i < evt->num_bytes+3; i++)
+    {
+        printf("%02x ", buffer[i]);
+    }
+    putchar('\n');
+
+    return 0;
+}

@@ -126,7 +126,11 @@ int parse_event_complete(uint8_t *example, struct evt_cmd_complete *evt)
     printf("  status           = 0x%02x\n", evt->status);
     printf("  Packet bytes: ");
     uint8_t *p1 = *(uint8_t **)evt->rparams;
-    for (size_t i = 0; i < evt->num_bytes; i++)
+    // The number 4 here represents the bytes in the struct
+    // other than num bytes. It is the best way we have to determine
+    // the length of the array. When this gets generalised, I will
+    // need to find a more generalisable method.
+    for (size_t i = 0; i < evt->num_bytes-4; i++)
         printf("%02x ", p1[i]);
     putchar('\n');
 
@@ -300,8 +304,6 @@ int encode_event_complete(uint8_t *buffer, struct evt_cmd_complete *evt)
                 offset += 2;
                 break;
             case F_BYTES:
-                // not implemented
-                printf("Size registered in strcut: %02x\n", (unsigned int)f->size);
                 // + 3 might seem like quite an arbitrary number here. It isn't, but getting
                 // to it is not clear.
                 // offset+3 signifies the bytes consumed after num_bytes, this is because

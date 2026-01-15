@@ -130,7 +130,7 @@ int parse_event_complete(uint8_t *example, struct evt_cmd_complete *evt)
     // other than num bytes. It is the best way we have to determine
     // the length of the array. When this gets generalised, I will
     // need to find a more generalisable method.
-    for (size_t i = 0; i < evt->num_bytes-4; i++)
+    for (int i = 0; i < evt->num_bytes-4; i++)
         printf("%02x ", p1[i]);
     putchar('\n');
 
@@ -330,7 +330,7 @@ int encode_event_complete(uint8_t *buffer, struct evt_cmd_complete *evt)
     }
 
     printf("Encoded packet:");
-    for (size_t i = 0; i < evt->num_bytes+3; i++)
+    for (int i = 0; i < evt->num_bytes+3; i++)
     {
         printf("%02x ", buffer[i]);
     }

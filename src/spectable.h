@@ -27,6 +27,7 @@ struct field_desc {
 };
 
 
+
 struct evt_cmd_status {
     uint8_t  num_bytes;
     uint8_t  status;
@@ -57,11 +58,71 @@ struct evt_cmd_complete {
     uint8_t  rparams[];
 };
 
+
+/*
+ * Error codes produced by the parser.
+ *
+ * If the parser returns a non-zero error code
+ * look for these definitions and NOT the 
+ * HCI error codes defined above.
+ *
+ * HCI error codes are reserved for errors
+ * produced by the bluetooth controller.
+ */
+typedef enum {
+    PARSE_OK          = 0, // Correctly parsed pkt.
+    PARSE_UNSUPPORTED = 1, // Correct, but unsupported features.
+    PARSE_TRUNCATED   = 2, // In complete buffer.
+    PARSE_INVALID     = 3, // Invalid HCI packets.
+    PARSE_EINVAL      = 4, // User error.
+    PARSE_ERROR       = 5, // Internal parser error.
+}parse_error_codes;
+
 /* Descriptor table for evt_cmd_status */
 extern const struct field_desc evt_cmd_status_desc[];
 extern const size_t evt_cmd_status_desc_len;
 
 extern const struct field_desc evt_cmd_complete_desc[];
 extern const size_t evt_cmd_complete_desc_len;
+
+
+
+
+
+#define EVENT_TYPES \
+    X(EVT_CMD_STATUS,   0x0F, struct evt_cmd_status) \
+    X(EVT_CMD_COMPLETE, 0x0E, struct evt_cmd_complete)
+
+
+
+// typedef enum {
+//     EVT_CMD_STATUS   = 0x0F,
+//     EVT_CMD_COMPLETE = 0x0E,
+// } event_types_id;
+typedef enum {
+#define X(name, byte, type) name = byte,
+    EVENT_TYPES
+#undef X
+} event_types_id;
+
+
+// typedef struct {
+//     event_types_id type;
+//     union {
+//         struct evt_cmd_status   EVT_CMD_STATUS_id;
+//         struct evt_cmd_complete EVT_CMD_COMPLETE_id;
+//     };
+// } event_pkt;
+typedef struct {
+    event_types_id type;
+    union {
+#define X(name, byte, type) type name##_id;
+        EVENT_TYPES
+#undef X
+    };
+} event_pkt;
+
+
+
 
 #endif

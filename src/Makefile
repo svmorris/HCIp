@@ -9,7 +9,7 @@ CFLAGS = -Wall -Wextra -std=c11 -g
 TARGET = parser
 
 # Source files (all in same directory)
-SRCS = main.c spectable.c
+SRCS = parser.c spectable.c
 
 # Object files (derived automatically)
 OBJS = $(SRCS:.c=.o)

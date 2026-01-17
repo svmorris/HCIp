@@ -1,5 +1,13 @@
 #include "spectable.h"
 
+/*
+ * NOTE:
+ *  If any packet's first value is not `num_bytes` as F_U8,
+ *  then the parser has to be updated.
+ *
+ * NOTE_1:
+ *  Non-LE F_U16 values are not implemented yet.
+ */
 
 const struct field_desc evt_cmd_status_desc[] = {
     { F_U8,  offsetof(struct evt_cmd_status, num_bytes),        0, ENDIAN_NONE },
@@ -22,3 +30,18 @@ const struct field_desc evt_cmd_complete_desc[] = {
 };
 const size_t evt_cmd_complete_desc_len =
     sizeof(evt_cmd_complete_desc) / sizeof(evt_cmd_complete_desc[0]);
+
+
+
+const size_t field_desc_lens[0xFF] = {
+#define X(name, byte, type) [byte] = type##_desc_len
+    EVENT_TYPES
+#undef X
+};
+
+
+const struct field_desc field_descs[0xFF] = {
+#define X(name, byte, type) [byte] = type##_desc
+    EVENT_TYPES
+#undef X
+};

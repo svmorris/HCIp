@@ -85,13 +85,36 @@ extern const size_t evt_cmd_status_desc_len;
 extern const struct field_desc evt_cmd_complete_desc[];
 extern const size_t evt_cmd_complete_desc_len;
 
+extern const struct field_desc field_descs[];
+extern const size_t field_desc_lens[];
 
 
 
 
+
+/*
+ * TODO: Need to change the definition of EVENT_TYPES to include
+ *       this prefix value. type##_desc simply doesn't work
+ * Definition:
+ *   - name (enum)
+ *   - prefix (for other variables)
+ *   - byte (value)
+ *   - type (struct)
+ */
+// #define EVENT_TYPES \
+//     X(EVT_CMD_STATUS,  evt_cmd_status, 0x0F, struct evt_cmd_status) \
+//     X(EVT_CMD_COMPLETE, evt_cmd_complete, 0x0E, struct evt_cmd_complete)
+
+
+/*
+ * Definition:
+ *   - name (enum)
+ *   - byte (value)
+ *   - type (struct)
+ */
 #define EVENT_TYPES \
-    X(EVT_CMD_STATUS,   0x0F, struct evt_cmd_status) \
-    X(EVT_CMD_COMPLETE, 0x0E, struct evt_cmd_complete)
+    X(EVT_CMD_STATUS,  0x0F, struct evt_cmd_status) \
+    X(EVT_CMD_COMPLETE,0x0E, struct evt_cmd_complete)
 
 
 
@@ -111,7 +134,7 @@ typedef enum {
 //     union {
 //         struct evt_cmd_status   EVT_CMD_STATUS_id;
 //         struct evt_cmd_complete EVT_CMD_COMPLETE_id;
-//     };
+//     }u;
 // } event_pkt;
 typedef struct {
     event_types_id type;
@@ -119,7 +142,7 @@ typedef struct {
 #define X(name, byte, type) type name##_id;
         EVENT_TYPES
 #undef X
-    };
+    }u;
 } event_pkt;
 
 

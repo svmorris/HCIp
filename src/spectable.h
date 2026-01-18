@@ -55,7 +55,7 @@ struct evt_cmd_complete {
     uint8_t  num_hci_commands;
     uint16_t opcode;
     uint8_t  status;
-    uint8_t  rparams[];
+    uint8_t  *rparams;
 };
 
 
@@ -85,7 +85,7 @@ extern const size_t evt_cmd_status_desc_len;
 extern const struct field_desc evt_cmd_complete_desc[];
 extern const size_t evt_cmd_complete_desc_len;
 
-extern const struct field_desc field_descs[];
+extern const struct field_desc *field_descs[];
 extern const size_t field_desc_lens[];
 
 
@@ -93,29 +93,15 @@ extern const size_t field_desc_lens[];
 
 
 /*
- * TODO: Need to change the definition of EVENT_TYPES to include
- *       this prefix value. type##_desc simply doesn't work
  * Definition:
  *   - name (enum)
  *   - prefix (for other variables)
  *   - byte (value)
  *   - type (struct)
  */
-// #define EVENT_TYPES \
-//     X(EVT_CMD_STATUS,  evt_cmd_status, 0x0F, struct evt_cmd_status) \
-//     X(EVT_CMD_COMPLETE, evt_cmd_complete, 0x0E, struct evt_cmd_complete)
-
-
-/*
- * Definition:
- *   - name (enum)
- *   - byte (value)
- *   - type (struct)
- */
 #define EVENT_TYPES \
-    X(EVT_CMD_STATUS,  0x0F, struct evt_cmd_status) \
-    X(EVT_CMD_COMPLETE,0x0E, struct evt_cmd_complete)
-
+    X(EVT_CMD_STATUS,  evt_cmd_status, 0x0F, struct evt_cmd_status) \
+    X(EVT_CMD_COMPLETE, evt_cmd_complete, 0x0E, struct evt_cmd_complete)
 
 
 // typedef enum {
@@ -123,7 +109,7 @@ extern const size_t field_desc_lens[];
 //     EVT_CMD_COMPLETE = 0x0E,
 // } event_types_id;
 typedef enum {
-#define X(name, byte, type) name = byte,
+#define X(name, prefix, byte, type) name = byte,
     EVENT_TYPES
 #undef X
 } event_types_id;
@@ -139,7 +125,7 @@ typedef enum {
 typedef struct {
     event_types_id type;
     union {
-#define X(name, byte, type) type name##_id;
+#define X(name, prefix, byte, type) type name##_id;
         EVENT_TYPES
 #undef X
     }u;

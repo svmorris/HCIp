@@ -34,14 +34,14 @@ const size_t evt_cmd_complete_desc_len =
 
 
 const size_t field_desc_lens[0xFF] = {
-#define X(name, byte, type) [byte] = type##_desc_len
+#define X(name, prefix, byte, type) [byte] = prefix##_desc_len,
     EVENT_TYPES
 #undef X
 };
 
 
-const struct field_desc field_descs[0xFF] = {
-#define X(name, byte, type) [byte] = type##_desc
+const struct field_desc *field_descs[0xFF] = {
+#define X(name, prefix, byte, type) [byte] = prefix##_desc,
     EVENT_TYPES
 #undef X
 };

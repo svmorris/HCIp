@@ -71,11 +71,11 @@ struct evt_cmd_complete {
  */
 typedef enum {
     PARSE_OK          = 0, // Correctly parsed pkt.
-    PARSE_UNSUPPORTED = 1, // Correct, but unsupported features.
-    PARSE_TRUNCATED   = 2, // In complete buffer.
-    PARSE_INVALID     = 3, // Invalid HCI packets.
-    PARSE_EINVAL      = 4, // User error.
-    PARSE_ERROR       = 5, // Internal parser error.
+    PARSE_UNSUPPORTED = -1, // Correct, but unsupported features.
+    PARSE_TRUNCATED   = -2, // In complete buffer.
+    PARSE_INVALID     = -3, // Invalid HCI packets.
+    PARSE_EINVAL      = -4, // User error.
+    PARSE_ERROR       = -5, // Internal parser error.
 }parse_error_codes;
 
 /* Descriptor table for evt_cmd_status */

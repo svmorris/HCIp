@@ -6,6 +6,7 @@
 #include "spectable.h"
 
 int parse_event(uint8_t *event_bytecode, event_pkt *evt);
+int encode_event(event_pkt *evt, uint8_t *event_bytecode);
 
 int main()
 {
@@ -31,7 +32,29 @@ int main()
     }
 
     putchar('\n');
+
+
+    printf("Re-encoding packet: ");
+    uint8_t *sbuf = malloc(0xff);
+    int n = encode_event(&evt, sbuf);
+    if (n < 0)
+    {
+        printf("\nParsing error: %d\n", n);
+        exit(n);
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        printf("%02x ", sbuf[i]);
+    }
     putchar('\n');
+
+
+
+
+    putchar('\n');
+    putchar('\n');
+
 
 
     uint8_t example1[] = { 0x04, 0x0e, 0x0c, 0x01, 0x01, 0x10, 0x00, 0x0d, 0x85, 0x30, 0x0d, 0x02, 0x00, 0x85, 0x30 };
@@ -66,6 +89,26 @@ int main()
         }
         putchar('\n');
     }
+    putchar('\n');
+
+    printf("Re-encoding packet: ");
+    uint8_t *cbuf = malloc(0xff);
+    int n1 = encode_event(&evt1, cbuf);
+    if (n < 0)
+    {
+        printf("\nParsing error: %d\n", n1);
+        exit(n1);
+    }
+
+    for (int i = 0; i < n1; i++)
+    {
+        printf("%02x ", cbuf[i]);
+    }
+    putchar('\n');
+
+
+    free(sbuf);
+    free(cbuf);
 
 
 }
@@ -132,9 +175,64 @@ int parse_event(uint8_t *event_bytecode, event_pkt *evt)
                 offset += num_bytes - offset;
 
             default:
-                // TODO: error handling
+                return PARSE_ERROR;
                 break;
         }
     }
     return PARSE_OK;
+}
+
+int encode_event(event_pkt *evt, uint8_t* event_bytecode)
+{
+    event_bytecode[0] = 0x04;
+    event_bytecode[1] = (uint8_t)evt->type;
+    int offset = 2;
+
+    void *u = (uint8_t *)evt+offsetof(event_pkt, u);
+    uint8_t num_bytes = 0;
+
+
+    for (size_t i = 0; i < field_desc_lens[(uint8_t)evt->type]; i++)
+    {
+        const struct field_desc *f = field_descs[(uint8_t)evt->type] + i;
+
+        uint8_t *src = u + f->offset;
+
+        switch (f->type)
+        {
+            case F_U8:
+                event_bytecode[offset] = *src;
+                offset++;
+                if (i == 0)
+                    num_bytes = (uint8_t)*src;
+                break;
+            case F_U16:
+                if(f->endian == ENDIAN_LE)
+                {
+                    uint16_t v = (uint16_t)src[0] | ((uint16_t)src[1] << 8);
+                    memcpy(&event_bytecode[offset], &v, sizeof(uint16_t));
+                }
+                else
+                {
+                    memcpy(&event_bytecode[offset], src, sizeof(uint16_t));
+                }
+                offset += 2;
+                break;
+
+            case F_BYTES:
+                // +3 is not an arbitrary number. It is the current position
+                // of the byte string after removing the packet type, event type
+                // and num_bytes value.
+                memcpy(&event_bytecode[offset], *(uint8_t **)src, num_bytes-offset+3);
+                offset = offset + (num_bytes-offset+3);
+                break;
+
+            default:
+                return PARSE_ERROR;
+                break;
+
+        }
+    }
+
+    return offset;
 }

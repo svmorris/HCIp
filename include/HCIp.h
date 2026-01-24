@@ -14,13 +14,137 @@
  */
 
 
-
-struct evt_cmd_status {
+struct evt_inquiry_complete {
     uint8_t  num_bytes;
     uint8_t  status;
-    uint8_t  num_hci_commands;
-    uint16_t opcode;
 };
+
+
+/*
+ * The controller is able to send
+ * multiple inquiry responses at once
+ * within one packet.
+ *
+ * NOTE: This is not implemented yet as it
+ *       requires yet another re-think of the parser
+ *       and encoder.
+ *
+ *       I don't yet know how common this is
+ *       and whether I should create a single case for
+ *       this event or have a more generalised approach.
+ */
+struct _inquiry_response {
+    uint8_t  bd_addr[6];          // BD_ADDR[i]
+    uint8_t  page_scan_rep_mode;  // Page_Scan_Repetition_Mode[i]
+    uint16_t reserved;            // Reserved[i]
+    uint8_t  class_of_device[3];  // Class_Of_Device[i]
+    uint16_t clock_offset;        // Clock_Offset[i] (bits 0–14 valid)
+};
+struct evt_inquiry_result {
+    uint8_t num_bytes;
+    uint8_t num_responses;        // How many responses.
+    struct _inquiry_response responses[];
+};
+
+
+struct evt_connection_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  bd_addr[6];
+    uint8_t  link_type;
+    uint8_t  encryption_enabled;
+};
+
+
+struct evt_connection_request {
+    uint8_t  num_bytes;
+    uint8_t  bd_addr[6];
+    uint8_t  class_of_device[3];
+    uint8_t  link_type;
+};
+
+struct evt_disconnection_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  reason;
+};
+
+struct evt_authentication_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+};
+
+struct evt_remote_name_request_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint8_t  bd_addr[6];
+    uint8_t  remote_name[248];
+};
+
+/*
+ * There are two versions of the Encryption Change event.
+ * Since they have very different event codes and layouts
+ * they are being separated into two structs.
+ */
+struct evt_encryption_change_v1 {
+    uint8_t  num_bytes;          // must be 0x04
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  encryption_enabled;
+};
+
+struct evt_encryption_change_v2 {
+    uint8_t  num_bytes;          // must be 0x05
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  encryption_enabled;
+    uint8_t  encryption_key_size;
+};
+
+struct evt_change_connection_link_key_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+};
+
+struct evt_link_key_type_changed {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  link_key_type;
+};
+
+struct evt_read_remote_supported_features_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  lmp_features[8];
+};
+
+struct evt_read_remote_version_information_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  version;
+    uint16_t manufacturer_name;
+    uint16_t subversion;
+};
+
+struct evt_qos_setup_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  flags;
+    uint8_t  service_type;
+    uint32_t token_rate;
+    uint32_t peak_bandwidth;
+    uint32_t latency;
+    uint32_t delay_variation;
+};
+
 
 /*
  * The bluetooth spec doesn't explicitly guarantee that
@@ -45,8 +169,100 @@ struct evt_cmd_complete {
     uint8_t  *rparams;
 };
 
+struct evt_cmd_status {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint8_t  num_hci_commands;
+    uint16_t opcode;
+};
+
+struct evt_hardware_error {
+    uint8_t num_bytes;
+    uint8_t hardware_code;
+};
+
+struct evt_flush_occurred {
+    uint8_t  num_bytes;
+    uint16_t connection_handle;
+};
+
+struct evt_role_change {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint8_t  bd_addr[6];
+    uint8_t  new_role;
+};
+
+/*
+ * This follows a similar structure to inquiry response.
+ * Although conceptually they are different,
+ * the parser should handle them as equal.
+ *
+ * NOTE: Similarly to inquiry complete,
+ *       the parser is not currently able
+ *       to handle this.
+ */
+struct _completed_packets_tuple {
+    uint16_t connection_handle;
+    uint16_t completed_packets;
+};
+struct evt_number_of_completed_packets {
+    uint8_t num_bytes;
+    uint8_t number_of_handles;
+    struct _completed_packets_tuple tuples[];
+};
+
+struct evt_mode_change {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  current_mode;
+    uint16_t interval;
+};
 
 
+/*
+ * When you are reading this comment
+ * replace the text in your mind with that
+ * of evt_number_of_completed_packets or
+ * evt_inquiry_result.
+ */
+struct _return_link_key_record {
+    uint8_t bd_addr[6];
+    uint8_t link_key[16];
+};
+struct evt_return_link_keys {
+    uint8_t num_bytes;
+    uint8_t num_keys;
+    struct _return_link_key_record keys[];
+};
+
+struct evt_pin_code_request {
+    uint8_t num_bytes;
+    uint8_t bd_addr[6];
+};
+
+struct evt_link_key_request {
+    uint8_t num_bytes;
+    uint8_t bd_addr[6];
+};
+
+struct evt_link_key_notification {
+    uint8_t  num_bytes;
+    uint8_t  bd_addr[6];
+    uint8_t  link_key[16];
+    uint8_t  key_type;
+};
+
+struct evt_loopback_command {
+    uint8_t  num_bytes;
+    uint8_t  *command_packet;
+};
+
+struct evt_data_buffer_overflow {
+    uint8_t  num_bytes;
+    uint8_t  link_type;
+};
 /*
  *              Spec defined constants.
  *

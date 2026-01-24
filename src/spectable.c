@@ -1,5 +1,7 @@
 #include "parser.h"
 
+#include <stddef.h>
+
 /*
  * NOTE:
  *  If any packet's first value is not `num_bytes` as F_U8,

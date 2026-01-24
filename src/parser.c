@@ -1,5 +1,7 @@
 #include "parser.h"
 #include <string.h>
+#include <stdint.h>
+#include <stddef.h>
 
 int parse_event(uint8_t *event_bytecode, event_pkt *evt)
 {
@@ -26,6 +28,9 @@ int parse_event(uint8_t *event_bytecode, event_pkt *evt)
 
         // Pointer to where each value should live in the union
         uint8_t *dst = u + f->offset;
+
+        // Forward declare for bytes.
+        uint8_t *p;
 
         switch (f->type)
         {
@@ -57,7 +62,7 @@ int parse_event(uint8_t *event_bytecode, event_pkt *evt)
                 break;
 
             case F_BYTES:
-                uint8_t *p = event_bytecode + offset;
+                p = event_bytecode + offset;
                 *(uint8_t **)dst = p;
                 offset += num_bytes - offset;
 

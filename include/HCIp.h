@@ -263,6 +263,114 @@ struct evt_data_buffer_overflow {
     uint8_t  num_bytes;
     uint8_t  link_type;
 };
+
+struct evt_max_slots_change {
+    uint8_t  num_bytes;
+    uint16_t connection_handle;
+    uint8_t  lmp_max_slots;
+};
+
+struct evt_read_clock_offset_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint16_t clock_offset;
+};
+
+struct evt_connection_packet_type_changed {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint16_t packet_type;
+};
+
+struct evt_qos_violation {
+    uint8_t  num_bytes;
+    uint16_t connection_handle;
+};
+
+struct evt_page_scan_repetition_mode_change {
+    uint8_t  num_bytes;
+    uint8_t  bd_addr[6];
+    uint8_t  page_scan_repetition_mode;
+};
+
+struct evt_flow_specification_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  unused;
+    uint8_t  flow_direction;
+    uint8_t  service_type;
+    uint32_t token_rate;
+    uint32_t token_bucket_size;
+    uint32_t peak_bandwidth;
+    uint32_t access_latency;
+};
+
+
+/*
+ * When you are reading this comment
+ * replace the text in your mind with that
+ * of evt_number_of_completed_packets or
+ * evt_inquiry_result.
+ */
+struct _inquiry_result_with_rssi_response {
+    uint8_t  bd_addr[6];
+    uint8_t  page_scan_rep_mode;
+    uint8_t  reserved;
+    uint8_t  class_of_device[3];
+    uint16_t clock_offset;
+    int8_t   rssi;
+};
+
+struct evt_inquiry_result_with_rssi {
+    uint8_t num_bytes;
+    uint8_t num_responses;
+    struct _inquiry_result_with_rssi_response responses[];
+};
+
+struct evt_read_remote_extended_features_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  page_number;
+    uint8_t  max_page_number;
+    uint8_t  extended_lmp_features[8];
+};
+
+struct evt_synchronous_connection_complete {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  bd_addr[6];
+    uint8_t  link_type;
+    uint8_t  transmission_interval;
+    uint8_t  retransmission_window;
+    uint16_t rx_packet_length;
+    uint16_t tx_packet_length;
+    uint8_t  air_mode;
+};
+
+struct evt_synchronous_connection_changed {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint8_t  transmission_interval;
+    uint8_t  retransmission_window;
+    uint16_t rx_packet_length;
+    uint16_t tx_packet_length;
+};
+
+struct evt_sniff_subrating {
+    uint8_t  num_bytes;
+    uint8_t  status;
+    uint16_t connection_handle;
+    uint16_t max_transmit_latency;
+    uint16_t max_receive_latency;
+    uint16_t min_remote_timeout;
+    uint16_t min_local_timeout;
+};
 /*
  *              Spec defined constants.
  *

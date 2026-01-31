@@ -8,3 +8,5 @@ This library and CLI tool will be part of a larger bluetooth related project I a
 
 # Project status
 Not functional yet.
+
+This project is not abandonned. I've realised that a lot of the usefulness will come from embedded. I'm taking a break to learn zephyr
